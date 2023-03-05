@@ -1,23 +1,22 @@
-#include <Arduino.h>
 #include <time.h>
 #include <WiFi.h>
-#include <SSD1306Wire.h>
 #include "MySSID.h"
-#include "font.h"
+#include "LGFX_LOLIN32_SSD1306.hpp"
 
-static const char ntpServername[] ="ntp.nict.jp";
+const char ntpServername[] = "ntp.nict.jp";
 const long gmtOffset_sec = 3600L*9;
 const int daylightOffset_sec = 0;
+char timeStr[10];
 
-SSD1306Wire display(0x3c, 5, 4);
+static LGFX lcd;
 
 struct tm timeinfo;
 void PrintTime();
 
 void setup() {
   Serial.begin(9600);
-  display.init();
-  display.setFont(Roboto_Mono_Medium_25);
+  lcd.init();
+  lcd.setFont(&fonts::lgfxJapanGothic_32);
   WiFi.begin(ssid,pass);
   while(WiFi.status() != WL_CONNECTED){
     delay(50);
@@ -35,9 +34,7 @@ void loop() {
 
 void PrintTime(){
   getLocalTime(&timeinfo);
-  display.setLogBuffer(5, 30);
-  display.clear();
-  display.println(&timeinfo,"%H:%M:%S");
-  display.drawLogBuffer(0, 0);
-  display.display();
+  strftime(timeStr, 9, "%H:%M:%S", &timeinfo);
+  lcd.setCursor(0, 0);
+  lcd.print(timeStr);
 }
